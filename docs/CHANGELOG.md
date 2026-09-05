@@ -1,5 +1,16 @@
 # Changelog
 
+## Update - 2026-09-06
+
+### Automated change log
+
+- Automate changelog updates
+
+### Changed files
+
+- `scripts/publish-update.bat`
+- `scripts/publish-update.sh`
+
 All notable changes to Belanja Pintar are documented here.
 
 ## 1.3.0 - 2026-09-06
