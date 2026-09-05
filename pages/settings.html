@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Belanja Pintar">
+  <script>const initialThemeMode = localStorage.getItem("belanja-pintar-theme-mode") || localStorage.getItem("belanja-pintar-theme") || "system"; document.documentElement.dataset.theme = initialThemeMode === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : initialThemeMode; document.documentElement.lang = localStorage.getItem("belanja-pintar-language") || "id"; document.documentElement.dataset.lowData = localStorage.getItem("belanja-pintar-low-data") === "true" ? "true" : "false";</script>
+  <link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f5f1e8">
+  <title>Pengaturan</title>
+  <link rel="manifest" href="../assets/manifest.json">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body data-page="settings">
+  <main class="page-shell">
+    <header class="topbar">
+      <div class="brand-group"><button class="menu-button" id="menuButton" type="button" aria-label="Buka menu" aria-expanded="false"><span></span><span></span><span></span></button><a class="brand" href="index.html">belanja<span>pintar</span></a></div>
+      <div class="header-controls"><label class="theme-control" title="Ganti tema"><span id="themeIcon">☼</span><input id="themeToggle" type="checkbox" role="switch"><span class="toggle-track"><span class="toggle-thumb"></span></span></label><button class="language-toggle" id="languageToggle" type="button">EN</button></div>
+    </header>
+    <section class="page-intro"><p class="eyebrow" data-i18n="settingsEyebrow">PREFERENSI</p><h1 data-i18n="settingsTitle">Pengaturan</h1><p class="intro-copy" data-i18n="settingsCopy">Atur tampilan dan batas belanja sesuai kebutuhanmu.</p></section>
+    <section class="page-panel settings-panel">
+      <label class="setting-row"><span><strong data-i18n="themeSetting">Tema tampilan</strong><small data-i18n="themeSettingCopy">Ikuti sistem atau pilih dark/light dari header.</small></span><select id="themeMode" class="setting-select"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+      <label class="setting-row"><span><strong data-i18n="currencySetting">Mata uang</strong><small data-i18n="currencySettingCopy">Dipakai untuk semua total dan harga.</small></span><select id="currencySelect" class="setting-select"><option value="IDR">IDR / Rp</option><option value="USD">USD / $</option><option value="SGD">SGD / $</option></select></label>
+      <label class="setting-row"><span><strong data-i18n="budgetSetting">Batas budget</strong><small data-i18n="budgetSettingCopy">Batas ini dipakai di halaman Belanja.</small></span><span class="input-prefix setting-input"><b id="settingsCurrency">Rp</b><input id="settingsBudget" type="number" min="0" step="1000" placeholder="0"></span></label>
+      <div class="setting-row"><span><strong data-i18n="offlineSetting">Mode offline</strong><small data-i18n="offlineSettingCopy">Data daftar disimpan di browser ini.</small></span><span id="offlineStatus">Aktif</span></div>
+      <label class="setting-row"><span><strong data-i18n="lowDataSetting">Mode hemat data</strong><small data-i18n="lowDataSettingCopy">Kurangi pola dan animasi dekoratif.</small></span><input id="lowDataToggle" type="checkbox"></label>
+      <label class="setting-row"><span><strong data-i18n="notificationSetting">Notifikasi budget</strong><small data-i18n="notificationSettingCopy">Beri izin notifikasi saat budget terlewati.</small></span><input id="notificationToggle" type="checkbox"></label>
+      <div class="setting-row"><span><strong data-i18n="installSetting">Install aplikasi</strong><small data-i18n="installSettingCopy">Tambahkan Belanja Pintar ke Home Screen.</small></span><button class="tool-button" id="installButton" type="button" data-i18n="install">Install</button></div>
+      <div class="setting-row"><span><strong data-i18n="backupSetting">Backup data</strong><small data-i18n="backupSettingCopy">Simpan atau pulihkan semua data aplikasi.</small></span><span class="setting-actions"><button class="tool-button" id="backupButton" type="button" data-i18n="backup">Backup</button><button class="tool-button" id="restoreButton" type="button" data-i18n="restore">Import</button><input id="restoreInput" type="file" accept="application/json" hidden></span></div>
+      <div class="setting-row"><span><strong data-i18n="resetSetting">Reset data</strong><small data-i18n="resetSettingCopy">Hapus semua daftar dan pengaturan lokal.</small></span><button class="tool-button danger-button" id="resetButton" type="button" data-i18n="reset">Reset</button></div>
+    </section>
+    <footer class="footer"><span>Belanja Pintar</span><span data-i18n="storage">Data tersimpan di browser ini</span></footer>
+  </main>
+  <div class="menu-backdrop" id="menuBackdrop" hidden></div><aside class="side-menu" id="sideMenu" aria-hidden="true"><div class="side-menu-header"><strong>belanja<span>pintar</span></strong><button class="close-menu" id="closeMenu" type="button">×</button></div><nav class="main-nav"><a class="nav-link" href="index.html"><span>◫</span><span data-i18n="shopping">Belanja</span></a><a class="nav-link" href="saved.html"><span>▤</span><span data-i18n="savedLists">Daftar tersimpan</span></a><a class="nav-link" href="analytics.html"><span>▥</span><span data-i18n="analyticsNav">Analitik</span></a><a class="nav-link active" href="settings.html"><span>⚙</span><span data-i18n="settings">Pengaturan</span></a></nav></aside>
+  <div class="page-loader" id="pageLoader" aria-live="polite" aria-label="Memuat halaman" hidden><span></span></div>
+  <script src="../js/pages.js"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Belanja Pintar">
+  <script>const initialThemeMode = localStorage.getItem("belanja-pintar-theme-mode") || localStorage.getItem("belanja-pintar-theme") || "system"; document.documentElement.dataset.theme = initialThemeMode === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : initialThemeMode; document.documentElement.lang = localStorage.getItem("belanja-pintar-language") || "id"; document.documentElement.dataset.lowData = localStorage.getItem("belanja-pintar-low-data") === "true" ? "true" : "false";</script>
+  <link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f5f1e8">
+  <title>Analitik Belanja</title>
+  <link rel="manifest" href="../assets/manifest.json">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body data-page="analytics">
+  <main class="page-shell">
+    <header class="topbar">
+      <div class="brand-group"><button class="menu-button" id="menuButton" type="button" aria-label="Buka menu" aria-expanded="false"><span></span><span></span><span></span></button><a class="brand" href="index.html">belanja<span>pintar</span></a></div>
+      <div class="header-controls"><label class="theme-control" title="Ganti tema"><span id="themeIcon">Sun</span><input id="themeToggle" type="checkbox" role="switch"><span class="toggle-track"><span class="toggle-thumb"></span></span></label><button class="language-toggle" id="languageToggle" type="button">EN</button></div>
+    </header>
+    <section class="page-intro"><p class="eyebrow" data-i18n="analyticsEyebrow">RINGKASAN BELANJA</p><h1 data-i18n="analyticsTitle">Analitik</h1><p class="intro-copy" data-i18n="analyticsCopy">Lihat pola pengeluaran, kategori terbesar, dan perubahan harga.</p></section>
+    <section class="analytics-grid">
+      <article class="page-panel analytics-panel"><div class="panel-heading"><div><p class="eyebrow" data-i18n="categoryBudget">BUDGET PER KATEGORI</p><h2 id="categoryBudgetTitle" data-i18n="categoryTitle">Kategori</h2></div></div><div id="categoryChart" class="category-chart"></div></article>
+      <article class="page-panel analytics-panel"><div class="panel-heading"><div><p class="eyebrow" data-i18n="priceHistoryTitle">RIWAYAT HARGA</p><h2 data-i18n="priceHistoryHeading">Perubahan harga</h2></div></div><div id="priceHistoryList" class="price-history-list"></div></article>
+    </section>
+    <section class="page-panel history-panel"><p class="eyebrow" data-i18n="monthlyHistoryEyebrow">RIWAYAT BULANAN</p><h2 data-i18n="monthlyHistoryTitle">Belanja per bulan</h2><div id="monthlyHistory"></div></section>
+    <footer class="footer"><span>Belanja Pintar</span><span data-i18n="storage">Data tersimpan di browser ini</span></footer>
+  </main>
+  <div class="menu-backdrop" id="menuBackdrop" hidden></div><aside class="side-menu" id="sideMenu" aria-hidden="true"><div class="side-menu-header"><strong>belanja<span>pintar</span></strong><button class="close-menu" id="closeMenu" type="button">×</button></div><nav class="main-nav"><a class="nav-link" href="index.html"><span>◫</span><span data-i18n="shopping">Belanja</span></a><a class="nav-link" href="saved.html"><span>▤</span><span data-i18n="savedLists">Daftar tersimpan</span></a><a class="nav-link active" href="analytics.html"><span>▥</span><span data-i18n="analyticsNav">Analitik</span></a><a class="nav-link" href="settings.html"><span>⚙</span><span data-i18n="settings">Pengaturan</span></a></nav></aside>
+  <div class="page-loader" id="pageLoader" aria-live="polite" aria-label="Memuat halaman" hidden><span></span></div>
+  <script src="../js/analytics.js"></script>
+</body>
+</html>

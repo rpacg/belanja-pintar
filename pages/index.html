@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Belanja Pintar">
+  <script>const initialThemeMode = localStorage.getItem("belanja-pintar-theme-mode") || localStorage.getItem("belanja-pintar-theme") || "system"; document.documentElement.dataset.theme = initialThemeMode === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : initialThemeMode; document.documentElement.lang = localStorage.getItem("belanja-pintar-language") || "id"; document.documentElement.dataset.lowData = localStorage.getItem("belanja-pintar-low-data") === "true" ? "true" : "false";</script>
+  <link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f5f1e8">
+  <title>Belanja Pintar</title>
+  <link rel="manifest" href="../assets/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="topbar">
+      <div class="brand-group"><button class="menu-button" id="menuButton" type="button" aria-label="Buka menu" aria-expanded="false"><span></span><span></span><span></span></button><a class="brand" href="index.html" aria-label="Belanja Pintar">belanja<span>pintar</span></a></div>
+      <div class="header-controls">
+        <div class="topbar-note"><span class="status-dot"></span> <span id="savedLabel">Tersimpan otomatis</span></div>
+        <label class="theme-control" title="Ganti tema">
+          <span id="themeIcon" aria-hidden="true">☼</span>
+          <input id="themeToggle" type="checkbox" role="switch" aria-label="Mode gelap">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+        <button class="language-toggle" id="languageToggle" type="button" aria-label="Switch language">EN</button>
+      </div>
+    </header>
+
+    <section class="intro" id="shoppingSection">
+      <div>
+        <p class="eyebrow" id="introEyebrow">CATATAN BELANJA</p>
+        <h1 id="introTitle">Belanja lebih tenang,<br><em>dompet tetap aman.</em></h1>
+        <p class="intro-copy" id="introCopy">Rencanakan kebutuhanmu, bandingkan perkiraan dengan harga asli, dan lihat totalnya secara real-time.</p>
+      </div>
+      <div class="date-stamp" id="todayLabel"></div>
+    </section>
+
+    <section class="summary-grid" id="summarySection" aria-label="Ringkasan belanja">
+      <article class="summary-card estimate-card">
+        <div class="summary-label"><span class="summary-icon">R</span> <span id="estimateLabel">Estimasi total</span></div>
+        <strong id="estimatedTotal">Rp0</strong>
+        <span class="summary-detail" id="estimatedDetail">0 barang direncanakan</span>
+      </article>
+      <article class="summary-card actual-card">
+        <div class="summary-label"><span class="summary-icon">A</span> <span id="actualLabel">Total harga asli</span></div>
+        <strong id="actualTotal">Rp0</strong>
+        <span class="summary-detail" id="actualDetail">Belum ada harga aktual</span>
+      </article>
+      <article class="summary-card difference-card">
+        <div class="summary-label"><span class="summary-icon">Δ</span> <span id="differenceLabel">Selisih</span></div>
+        <strong id="differenceTotal">Rp0</strong>
+        <span class="summary-detail" id="differenceDetail">vs estimasi</span>
+      </article>
+    </section>
+
+    <section class="workspace">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow" id="listEyebrow">DAFTAR KEBUTUHAN</p>
+          <h2 id="listTitle">Yang perlu dibeli</h2>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span id="progressText">0 dari 0 selesai</span><span id="progressPercent">0%</span></div>
+          <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+        </div>
+      </div>
+
+      <form class="add-form" id="itemForm">
+        <label class="field field-store">
+          <span id="storeLabel">Toko</span>
+          <input id="storeInput" type="text" placeholder="Contoh: Supermarket" autocomplete="off">
+        </label>
+        <label class="field field-name">
+          <span id="nameLabel">Nama barang</span>
+          <input id="itemName" type="text" placeholder="Contoh: Telur ayam" autocomplete="off" required>
+        </label>
+        <label class="field">
+          <span id="estimatedPriceLabel">Estimasi harga</span>
+          <div class="input-prefix"><b id="currencyPrefix">Rp</b><input id="estimatedPrice" type="number" min="0" step="100" placeholder="0" required></div>
+        </label>
+        <label class="field field-quantity">
+          <span id="quantityLabel">Jumlah</span>
+          <input id="itemQuantity" type="number" min="1" step="1" placeholder="1" inputmode="numeric">
+        </label>
+        <label class="field field-unit">
+          <span id="unitLabel">Satuan</span>
+          <select id="itemUnit"><option value="pcs">Pcs</option><option value="kg">Kg</option><option value="liter">Liter</option><option value="box">Dus</option></select>
+        </label>
+        <label class="field field-discount">
+          <span id="discountLabel">Diskon %</span>
+          <input id="itemDiscount" type="number" min="0" max="100" step="1" placeholder="0" inputmode="numeric">
+        </label>
+        <label class="field field-category">
+          <span id="categoryLabel">Kategori</span>
+          <select id="itemCategory">
+            <option value="food">Makanan</option>
+            <option value="household">Rumah</option>
+            <option value="health">Kesehatan</option>
+            <option value="other">Lainnya</option>
+          </select>
+        </label>
+        <label class="field field-notes">
+          <span id="notesLabel">Catatan</span>
+          <input id="itemNotes" type="text" placeholder="Opsional">
+        </label>
+        <button class="primary-button" id="addButton" type="submit"><span>+</span> Tambah</button>
+      </form>
+      <div class="scanner-actions">
+        <button class="tool-button" id="scanButton" type="button">▣ <span id="scanLabel">Scan barcode</span></button>
+        <span class="scanner-note" id="scannerNote">Gunakan kamera untuk membaca barcode barang.</span>
+      </div>
+
+      <div class="budget-strip" id="settingsSection">
+        <label class="budget-field"><span id="budgetLabel">Batas budget</span><div class="input-prefix"><b id="budgetCurrencyPrefix">Rp</b><input id="budgetInput" type="number" min="0" step="1000" placeholder="0"></div></label>
+        <div class="budget-status"><span id="budgetStatus">Belum ada budget</span><div class="budget-track"><div id="budgetBar"></div></div></div>
+      </div>
+
+      <div class="list-tools" id="savedSection">
+        <select class="sort-select" id="quickAddSelect" aria-label="Tambah cepat"><option value="">Tambah cepat</option></select>
+        <input class="search-input" id="searchInput" type="search" placeholder="Cari barang..." aria-label="Cari barang">
+        <label class="saved-list-field"><span id="savedListLabel">Nama daftar</span><input id="listName" type="text" placeholder="Belanja minggu ini"></label>
+        <button class="tool-button" id="saveListButton" type="button">Simpan daftar</button>
+        <select class="sort-select" id="sortSelect" aria-label="Urutkan daftar">
+          <option value="added">Terbaru</option>
+          <option value="name">Nama</option>
+          <option value="price">Harga</option>
+          <option value="category">Kategori</option>
+        </select>
+        <button class="tool-button" id="shareButton" type="button">Bagikan</button>
+        <button class="tool-button" id="exportButton" type="button">Export</button>
+        <button class="tool-button" id="exportCsvButton" type="button">CSV</button>
+        <select class="sort-select" id="storeFilter" aria-label="Filter toko"><option value="all">Semua toko</option></select>
+        <select class="sort-select" id="categoryFilter" aria-label="Filter kategori"><option value="all">Semua kategori</option></select>
+      </div>
+      <div class="saved-lists" id="savedLists"></div>
+      <div class="stats-strip" id="statsStrip"></div>
+
+      <div class="toolbar">
+        <div class="filter-tabs" id="filterTabs" role="tablist" aria-label="Filter daftar barang">
+          <button class="filter-tab active" type="button" data-filter="all"><span id="allLabel">Semua</span> <b id="allCount">0</b></button>
+          <button class="filter-tab" type="button" data-filter="pending"><span id="pendingLabel">Belum dibeli</span> <b id="pendingCount">0</b></button>
+          <button class="filter-tab" type="button" data-filter="done"><span id="doneLabel">Selesai</span> <b id="doneCount">0</b></button>
+        </div>
+        <button class="text-button" id="clearDone" type="button">Hapus yang selesai</button>
+      </div>
+
+      <div class="list-container">
+        <div class="list-header"><span id="itemColumnLabel">Barang</span><span id="estimateColumnLabel">Estimasi</span><span id="actualColumnLabel">Harga asli</span><span></span></div>
+        <div id="shoppingList" class="shopping-list"></div>
+        <div id="emptyState" class="empty-state">
+          <div class="empty-mark">+</div>
+          <h3 id="emptyTitle">Daftar masih kosong</h3>
+          <p id="emptyCopy">Tambahkan barang pertama yang ingin kamu beli.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer"><span>Belanja Pintar</span><span id="storageLabel">Data tersimpan di browser ini</span></footer>
+  </main>
+  <div class="menu-backdrop" id="menuBackdrop" hidden></div>
+  <aside class="side-menu" id="sideMenu" aria-hidden="true" aria-label="Menu utama">
+    <div class="side-menu-header"><strong>belanja<span>pintar</span></strong><button class="close-menu" id="closeMenu" type="button" aria-label="Tutup menu">×</button></div>
+    <nav class="main-nav">
+      <a class="nav-link active" href="index.html"><span>◫</span><span id="navShopping">Belanja</span></a>
+      <a class="nav-link" href="saved.html"><span>▤</span><span id="navSaved">Daftar tersimpan</span></a>
+      <a class="nav-link" href="analytics.html"><span>▥</span><span id="navAnalytics">Analitik</span></a>
+      <a class="nav-link" href="settings.html"><span>⚙</span><span id="navSettings">Pengaturan</span></a>
+    </nav>
+    <div class="side-menu-footer" id="navHint">Data tersimpan otomatis di browser ini.</div>
+  </aside>
+  <div class="scanner-modal" id="scannerModal" hidden>
+    <div class="scanner-dialog" role="dialog" aria-modal="true" aria-labelledby="scannerTitle">
+      <div class="scanner-dialog-header"><h2 id="scannerTitle">Scan barcode</h2><button class="close-scanner" id="closeScanner" type="button" aria-label="Tutup">×</button></div>
+      <video id="scannerVideo" autoplay playsinline muted></video>
+      <p id="scannerMessage">Arahkan barcode ke dalam kamera.</p>
+      <label class="manual-barcode"><span id="manualBarcodeLabel">Atau masukkan kode manual</span><input id="manualBarcode" type="text" inputmode="numeric" placeholder="Contoh: 8991234567890"></label>
+      <button class="primary-button" id="useBarcode" type="button">Gunakan kode</button>
+    </div>
+  </div>
+  <div class="page-loader" id="pageLoader" aria-live="polite" aria-label="Memuat halaman" hidden><span></span></div>
+  <script src="../js/app.js"></script>
+</body>
+</html>

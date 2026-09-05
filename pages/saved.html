@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Belanja Pintar">
+  <script>const initialThemeMode = localStorage.getItem("belanja-pintar-theme-mode") || localStorage.getItem("belanja-pintar-theme") || "system"; document.documentElement.dataset.theme = initialThemeMode === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : initialThemeMode; document.documentElement.lang = localStorage.getItem("belanja-pintar-language") || "id"; document.documentElement.dataset.lowData = localStorage.getItem("belanja-pintar-low-data") === "true" ? "true" : "false";</script>
+  <link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f5f1e8">
+  <title>Daftar Tersimpan</title>
+  <link rel="manifest" href="../assets/manifest.json">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body data-page="saved">
+  <main class="page-shell">
+    <header class="topbar">
+      <div class="brand-group"><button class="menu-button" id="menuButton" type="button" aria-label="Buka menu" aria-expanded="false"><span></span><span></span><span></span></button><a class="brand" href="index.html">belanja<span>pintar</span></a></div>
+      <div class="header-controls"><label class="theme-control" title="Ganti tema"><span id="themeIcon">☼</span><input id="themeToggle" type="checkbox" role="switch"><span class="toggle-track"><span class="toggle-thumb"></span></span></label><button class="language-toggle" id="languageToggle" type="button">EN</button></div>
+    </header>
+    <section class="page-intro"><p class="eyebrow" data-i18n="savedEyebrow">ARSIP BELANJA</p><h1 data-i18n="savedTitle">Daftar tersimpan</h1><p class="intro-copy" data-i18n="savedCopy">Buka kembali daftar belanja yang pernah kamu simpan.</p></section>
+    <section class="page-panel"><div class="saved-list-tools"><input id="savedSearch" class="search-input" type="search" placeholder="Cari daftar..." aria-label="Cari daftar"><select id="savedView" class="sort-select" aria-label="Tampilan daftar"><option value="active">Aktif</option><option value="favorite">Favorit</option><option value="archived">Arsip</option></select></div><div id="savedPageList" class="saved-page-list"></div><div id="savedPageEmpty" class="empty-state"><div class="empty-mark">+</div><h3 data-i18n="savedEmptyTitle">Belum ada daftar tersimpan</h3><p data-i18n="savedEmptyCopy">Simpan daftar dari halaman Belanja untuk melihatnya di sini.</p><a class="primary-button page-button" href="index.html" data-i18n="goShopping">Ke halaman belanja</a></div></section>
+    <section class="page-panel history-panel"><p class="eyebrow" data-i18n="historyEyebrow">RIWAYAT</p><h2 data-i18n="historyTitle">Riwayat belanja bulanan</h2><div id="monthlyHistory"></div></section>
+    <footer class="footer"><span>Belanja Pintar</span><span data-i18n="storage">Data tersimpan di browser ini</span></footer>
+  </main>
+  <div class="menu-backdrop" id="menuBackdrop" hidden></div><aside class="side-menu" id="sideMenu" aria-hidden="true"><div class="side-menu-header"><strong>belanja<span>pintar</span></strong><button class="close-menu" id="closeMenu" type="button">×</button></div><nav class="main-nav"><a class="nav-link" href="index.html"><span>◫</span><span data-i18n="shopping">Belanja</span></a><a class="nav-link active" href="saved.html"><span>▤</span><span data-i18n="savedLists">Daftar tersimpan</span></a><a class="nav-link" href="analytics.html"><span>▥</span><span data-i18n="analyticsNav">Analitik</span></a><a class="nav-link" href="settings.html"><span>⚙</span><span data-i18n="settings">Pengaturan</span></a></nav></aside>
+  <div class="page-loader" id="pageLoader" aria-live="polite" aria-label="Memuat halaman" hidden><span></span></div>
+  <script src="../js/pages.js"></script>
+</body>
+</html>
