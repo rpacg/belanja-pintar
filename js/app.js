@@ -7,7 +7,9 @@ const CURRENCY_KEY = "belanja-pintar-currency";
 const NOTIFICATION_KEY = "belanja-pintar-notifications";
 const BUDGET_ALERT_KEY = "belanja-pintar-budget-alert";
 const LOW_DATA_KEY = "belanja-pintar-low-data";
+const TEMPLATES_KEY = "belanja-pintar-templates";
 const SUPPORTED_CURRENCIES = ["IDR", "USD", "SGD"];
+const CURRENCY_RATES = { IDR: 1, USD: 1 / 16000, SGD: 1 / 12500 };
 let items = loadItems();
 let activeFilter = "all";
 let language = ["id", "en"].includes(localStorage.getItem(LANGUAGE_KEY)) ? localStorage.getItem(LANGUAGE_KEY) : "id";
@@ -19,6 +21,7 @@ let selectedStore = "all";
 let selectedCategory = "all";
 let searchQuery = "";
 let savedLists = loadSavedLists();
+let undoSnapshot = null;
 
 const elements = {
   form: document.querySelector("#itemForm"),
@@ -56,6 +59,9 @@ const elements = {
   storeFilter: document.querySelector("#storeFilter"),
   categoryFilter: document.querySelector("#categoryFilter"),
   quickAdd: document.querySelector("#quickAddSelect"),
+  saveTemplate: document.querySelector("#saveTemplateButton"),
+  template: document.querySelector("#templateSelect"),
+  undo: document.querySelector("#undoButton"),
   stats: document.querySelector("#statsStrip"),
   search: document.querySelector("#searchInput"),
   scanButton: document.querySelector("#scanButton"),
@@ -118,7 +124,7 @@ function applyPreferences() {
   [...elements.category.options].forEach((option) => { option.textContent = t("categories")[option.value]; });
   document.querySelector("#budgetLabel").textContent = t("budget");
   document.querySelector("#budgetCurrencyPrefix").textContent = currency === "IDR" ? "Rp" : currency;
-  elements.budget.value = budget || "";
+  elements.budget.value = budget ? Math.round(budget * CURRENCY_RATES[currency]) : "";
   document.querySelector("#addButton").lastChild.textContent = ` ${t("add")}`;
   document.querySelector("#filterTabs").setAttribute("aria-label", t("filter"));
   document.querySelector("#allLabel").textContent = t("all");
@@ -146,6 +152,9 @@ function applyPreferences() {
   document.querySelector("#shareButton").textContent = t("share");
   document.querySelector("#exportButton").textContent = t("export");
   document.querySelector("#exportCsvButton").textContent = "CSV";
+  document.querySelector("#exportPdfButton").textContent = "PDF";
+  elements.template.options[0].textContent = language === "id" ? "Template belanja" : "Shopping templates";
+  elements.undo.textContent = language === "id" ? "Urungkan" : "Undo";
   document.querySelector("#scanLabel").textContent = t("scan");
   document.querySelector("#scannerNote").textContent = t("scannerNote");
   document.querySelector("#scannerTitle").textContent = t("scan");
@@ -195,6 +204,23 @@ elements.quickAdd.addEventListener("change", () => {
   elements.quickAdd.value = "";
   elements.name.focus();
 });
+elements.template.addEventListener("change", () => {
+  const templates = loadTemplates();
+  const selected = templates.find((template) => template.name === elements.template.value);
+  if (!selected) return;
+  items = JSON.parse(JSON.stringify(selected.items)).map(normalizeItem);
+  saveAndRender();
+  elements.template.value = "";
+});
+elements.saveTemplate.addEventListener("click", () => {
+  if (!items.length) return;
+  const name = prompt(language === "id" ? "Nama template" : "Template name", language === "id" ? "Belanja rutin" : "Regular shopping");
+  if (!name?.trim()) return;
+  const templates = loadTemplates().filter((template) => template.name !== name.trim());
+  templates.unshift({ name: name.trim(), items: JSON.parse(JSON.stringify(items)), savedAt: Date.now() });
+  localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates.slice(0, 20)));
+  updateTemplates();
+});
 
 document.querySelector("#saveListButton").addEventListener("click", () => {
   const name = elements.listName.value.trim() || (language === "id" ? `Daftar ${savedLists.length + 1}` : `List ${savedLists.length + 1}`);
@@ -207,6 +233,7 @@ document.querySelector("#saveListButton").addEventListener("click", () => {
 document.querySelector("#shareButton").addEventListener("click", shareList);
 document.querySelector("#exportButton").addEventListener("click", exportList);
 document.querySelector("#exportCsvButton").addEventListener("click", exportCsv);
+document.querySelector("#exportPdfButton").addEventListener("click", exportPdf);
 elements.scanButton.addEventListener("click", openScanner);
 document.querySelector("#closeScanner").addEventListener("click", closeScanner);
 document.querySelector("#useBarcode").addEventListener("click", () => useBarcode(elements.manualBarcode.value));
@@ -234,15 +261,23 @@ document.querySelectorAll("a[href]").forEach((link) => link.addEventListener("cl
 window.addEventListener("pageshow", () => { pageLoader.hidden = true; });
 
 elements.budget.addEventListener("change", () => {
-  budget = Math.max(0, Number(elements.budget.value) || 0);
+  budget = Math.max(0, Number(elements.budget.value) || 0) / CURRENCY_RATES[currency];
   localStorage.setItem(BUDGET_KEY, String(budget));
   updateSummary();
+});
+
+elements.undo.addEventListener("click", () => {
+  if (!undoSnapshot) return;
+  items = undoSnapshot;
+  undoSnapshot = null;
+  elements.undo.hidden = true;
+  saveAndRender();
 });
 
 elements.form.addEventListener("submit", (event) => {
   event.preventDefault();
   const name = elements.name.value.trim();
-  const estimatedPrice = Number(elements.estimatedPrice.value);
+  const estimatedPrice = Number(elements.estimatedPrice.value) / CURRENCY_RATES[currency];
   const quantity = elements.quantity.value === "" ? 1 : Number(elements.quantity.value);
   if (!name || estimatedPrice < 0 || quantity < 1) return;
 
@@ -274,7 +309,9 @@ document.querySelectorAll(".filter-tab").forEach((button) => {
 });
 
 document.querySelector("#clearDone").addEventListener("click", () => {
+  undoSnapshot = JSON.parse(JSON.stringify(items));
   items = items.filter((item) => !item.completed);
+  elements.undo.hidden = false;
   saveAndRender();
 });
 
@@ -291,7 +328,7 @@ elements.list.addEventListener("click", (event) => {
     }
   }
   if (event.target.closest(".edit-button")) editItem(item);
-  if (event.target.closest(".delete-button") && confirm(language === "id" ? `Hapus ${item.name}?` : `Delete ${item.name}?`)) items = items.filter((entry) => entry.id !== item.id);
+  if (event.target.closest(".delete-button") && confirm(language === "id" ? `Hapus ${item.name}?` : `Delete ${item.name}?`)) { undoSnapshot = JSON.parse(JSON.stringify(items)); items = items.filter((entry) => entry.id !== item.id); elements.undo.hidden = false; }
   saveAndRender();
 });
 
@@ -299,7 +336,7 @@ elements.list.addEventListener("change", (event) => {
   if (!event.target.matches(".actual-input")) return;
   const item = items.find((entry) => entry.id === event.target.closest(".item-row").dataset.id);
   if (!item) return;
-  const nextPrice = event.target.value === "" ? null : Math.max(0, Number(event.target.value));
+  const nextPrice = event.target.value === "" ? null : Math.max(0, Number(event.target.value)) / CURRENCY_RATES[currency];
   if (nextPrice !== null && nextPrice !== item.actualPrice) {
     item.priceHistory = item.priceHistory || [];
     item.priceHistory.unshift({ price: nextPrice, date: new Date().toISOString() });
@@ -320,6 +357,10 @@ function loadSavedLists() {
   catch { return []; }
 }
 
+function loadTemplates() {
+  try { return (JSON.parse(localStorage.getItem(TEMPLATES_KEY)) || []).filter((template) => typeof template?.name === "string" && Array.isArray(template.items)); } catch { return []; }
+}
+
 function normalizeItem(item) {
   if (!item || typeof item !== "object") return null;
   const allowedCategories = ["food", "household", "health", "other"];
@@ -337,7 +378,7 @@ function saveAndRender() {
 }
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat(language === "id" ? "id-ID" : "en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat(language === "id" ? "id-ID" : "en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(value * CURRENCY_RATES[currency]);
 }
 
 function discountedPrice(price, discount = 0) {
@@ -348,6 +389,7 @@ function render() {
   updateStoreFilter();
   updateCategoryFilter();
   updateQuickAdd();
+  updateTemplates();
   const visibleItems = items.filter((item) => (activeFilter === "all" || (activeFilter === "done" ? item.completed : !item.completed)) && (selectedStore === "all" || (item.store || "") === selectedStore) && (selectedCategory === "all" || (item.category || "other") === selectedCategory) && (!searchQuery || item.name.toLowerCase().includes(searchQuery) || (item.store || "").toLowerCase().includes(searchQuery) || (item.notes || "").toLowerCase().includes(searchQuery)));
   visibleItems.sort((a, b) => sortMode === "name" ? a.name.localeCompare(b.name) : sortMode === "price" ? b.estimatedPrice - a.estimatedPrice : sortMode === "category" ? (a.category || "").localeCompare(b.category || "") : 0);
   elements.list.innerHTML = visibleItems.map(renderItem).join("");
@@ -377,6 +419,10 @@ function updateQuickAdd() {
   elements.quickAdd.innerHTML = `<option value="">${t("quickAdd")}</option>${names.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("")}`;
 }
 
+function updateTemplates() {
+  elements.template.innerHTML = `<option value="">${language === "id" ? "Template belanja" : "Shopping templates"}</option>${loadTemplates().map((template) => `<option value="${escapeHtml(template.name)}">${escapeHtml(template.name)}</option>`).join("")}`;
+}
+
 function updateStats() {
   const categoryTotals = {};
   items.forEach((item) => { categoryTotals[item.category || "other"] = (categoryTotals[item.category || "other"] || 0) + discountedPrice(item.estimatedPrice, item.discount) * item.quantity; });
@@ -399,14 +445,14 @@ function renderItem(item) {
 function editItem(item) {
   const name = prompt(t("name"), item.name);
   if (name === null || !name.trim()) return;
-  const price = prompt(t("estimatedPrice"), item.estimatedPrice);
+  const price = prompt(t("estimatedPrice"), Math.round(item.estimatedPrice * CURRENCY_RATES[currency]));
   const quantity = prompt(t("quantity"), item.quantity);
   const unit = prompt(t("unitLabel"), item.unit || "pcs");
   const discount = prompt(t("discount"), item.discount || 0);
   const notes = prompt(t("notes"), item.notes || "");
   if (price === null || quantity === null || unit === null || discount === null || notes === null || Number(price) < 0 || Number(quantity) < 1 || Number(discount) < 0 || Number(discount) > 100) return;
   item.name = name.trim();
-  item.estimatedPrice = Number(price);
+  item.estimatedPrice = Number(price) / CURRENCY_RATES[currency];
   item.quantity = Number(quantity);
   item.unit = unit.trim() || "pcs";
   item.discount = Number(discount);
@@ -492,6 +538,15 @@ function exportCsv() {
   link.download = "daftar-belanja.csv";
   link.click();
   URL.revokeObjectURL(link.href);
+}
+
+function exportPdf() {
+  const printWindow = window.open("", "_blank", "width=900,height=700");
+  if (!printWindow) return;
+  printWindow.document.write(`<title>${escapeHtml(document.title)}</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#20231f}h1{margin-bottom:18px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:8px;text-align:left}th{background:#f5f1e8}</style><h1>${escapeHtml(document.title)}</h1><table><thead><tr><th>Name</th><th>Quantity</th><th>Unit</th><th>Estimate</th><th>Notes</th></tr></thead><tbody>${items.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${escapeHtml(item.unit || "pcs")}</td><td>${formatCurrency(discountedPrice(item.estimatedPrice, item.discount) * item.quantity)}</td><td>${escapeHtml(item.notes || "")}</td></tr>`).join("")}</tbody></table>`);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
 }
 
 async function openScanner() {

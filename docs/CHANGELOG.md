@@ -4,6 +4,22 @@
 
 ### Automated change log
 
+- Add local productivity features
+
+### Changed files
+
+- `css/styles.css`
+- `js/analytics.js`
+- `js/app.js`
+- `js/pages.js`
+- `pages/index.html`
+- `pages/settings.html`
+- `pages/sw.js`
+
+## Update - 2026-09-06
+
+### Automated change log
+
 - Automate changelog updates
 
 ### Changed files

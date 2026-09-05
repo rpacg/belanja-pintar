@@ -6,7 +6,10 @@ const CURRENCY_KEY = "belanja-pintar-currency";
 const NOTIFICATION_KEY = "belanja-pintar-notifications";
 const THEME_MODE_KEY = "belanja-pintar-theme-mode";
 const LOW_DATA_KEY = "belanja-pintar-low-data";
+const CATEGORY_BUDGET_KEY = "belanja-pintar-category-budgets";
+const REMINDER_KEY = "belanja-pintar-reminder";
 const SUPPORTED_CURRENCIES = ["IDR", "USD", "SGD"];
+const CURRENCY_RATES = { IDR: 1, USD: 1 / 16000, SGD: 1 / 12500 };
 let language = ["id", "en"].includes(localStorage.getItem(LANGUAGE_KEY)) ? localStorage.getItem(LANGUAGE_KEY) : "id";
 let theme = localStorage.getItem(THEME_KEY) || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 let currency = SUPPORTED_CURRENCIES.includes(localStorage.getItem(CURRENCY_KEY)) ? localStorage.getItem(CURRENCY_KEY) : "IDR";
@@ -38,6 +41,10 @@ copy.id.resetSettingCopy = "Hapus semua daftar dan pengaturan lokal."; copy.en.r
 copy.id.reset = "Reset"; copy.en.reset = "Reset";
 copy.id.lowDataSetting = "Mode hemat data"; copy.en.lowDataSetting = "Data saver mode";
 copy.id.lowDataSettingCopy = "Kurangi pola dan animasi dekoratif."; copy.en.lowDataSettingCopy = "Reduce decorative patterns and animations.";
+copy.id.categoryBudgetSetting = "Budget kategori"; copy.en.categoryBudgetSetting = "Category budgets";
+copy.id.categoryBudgetSettingCopy = "Atur batas terpisah untuk tiap kategori."; copy.en.categoryBudgetSettingCopy = "Set a separate limit for each category.";
+copy.id.reminderSetting = "Pengingat belanja"; copy.en.reminderSetting = "Shopping reminder";
+copy.id.reminderSettingCopy = "Tampilkan pengingat saat waktunya tiba."; copy.en.reminderSettingCopy = "Show a reminder when it is due.";
 const t = (key) => copy[language][key];
 
 function applyPagePreferences() {
@@ -61,10 +68,13 @@ function applyPagePreferences() {
   if (notificationToggle) notificationToggle.checked = localStorage.getItem(NOTIFICATION_KEY) === "true";
   const lowDataToggle = document.querySelector("#lowDataToggle");
   if (lowDataToggle) lowDataToggle.checked = localStorage.getItem(LOW_DATA_KEY) === "true";
+  renderCategoryBudgets();
+  const reminderInput = document.querySelector("#reminderInput");
+  if (reminderInput) reminderInput.value = localStorage.getItem(REMINDER_KEY) || "";
   const status = document.querySelector("#themeStatus");
   if (status) status.textContent = theme === "dark" ? "Dark" : "Light";
   const budget = document.querySelector("#settingsBudget");
-  if (budget) budget.value = Number(localStorage.getItem(BUDGET_KEY)) || "";
+  if (budget) budget.value = Number(localStorage.getItem(BUDGET_KEY)) ? Math.round(Number(localStorage.getItem(BUDGET_KEY)) * CURRENCY_RATES[currency]) : "";
   const savedSearchInput = document.querySelector("#savedSearch");
   if (savedSearchInput) { savedSearchInput.placeholder = t("savedSearch"); savedSearchInput.setAttribute("aria-label", t("savedSearch")); }
   const savedViewInput = document.querySelector("#savedView");
@@ -93,7 +103,7 @@ window.addEventListener("pageshow", () => { pageLoader.hidden = true; });
 document.querySelector("#themeToggle").addEventListener("change", (event) => { theme = event.target.checked ? "dark" : "light"; localStorage.setItem(THEME_KEY, theme); applyPagePreferences(); });
 document.querySelector("#languageToggle").addEventListener("click", () => { language = language === "id" ? "en" : "id"; localStorage.setItem(LANGUAGE_KEY, language); applyPagePreferences(); });
 const budgetInput = document.querySelector("#settingsBudget");
-if (budgetInput) budgetInput.addEventListener("change", () => localStorage.setItem(BUDGET_KEY, String(Math.max(0, Number(budgetInput.value) || 0))));
+  if (budgetInput) budgetInput.addEventListener("change", () => localStorage.setItem(BUDGET_KEY, String(Math.max(0, Number(budgetInput.value) || 0) / CURRENCY_RATES[currency])));
 const currencySelect = document.querySelector("#currencySelect");
 if (currencySelect) currencySelect.addEventListener("change", () => { localStorage.setItem(CURRENCY_KEY, currencySelect.value); location.reload(); });
 const themeMode = document.querySelector("#themeMode");
@@ -102,12 +112,14 @@ const notificationToggle = document.querySelector("#notificationToggle");
 if (notificationToggle) notificationToggle.addEventListener("change", async () => { if (notificationToggle.checked && "Notification" in window && Notification.permission !== "granted") { const permission = await Notification.requestPermission(); notificationToggle.checked = permission === "granted"; } localStorage.setItem(NOTIFICATION_KEY, String(notificationToggle.checked)); });
 const lowDataToggle = document.querySelector("#lowDataToggle");
 if (lowDataToggle) lowDataToggle.addEventListener("change", () => { localStorage.setItem(LOW_DATA_KEY, String(lowDataToggle.checked)); applyPagePreferences(); });
+const reminderInput = document.querySelector("#reminderInput");
+if (reminderInput) reminderInput.addEventListener("change", () => { localStorage.setItem(REMINDER_KEY, reminderInput.value); scheduleReminder(); });
 let deferredInstallPrompt = null;
 window.addEventListener("beforeinstallprompt", (event) => { event.preventDefault(); deferredInstallPrompt = event; });
 const installButton = document.querySelector("#installButton");
 if (installButton) installButton.addEventListener("click", async () => { if (!deferredInstallPrompt) { alert(language === "id" ? "Gunakan menu browser untuk menambahkan ke Home Screen." : "Use your browser menu to add this app to the Home Screen."); return; } deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; deferredInstallPrompt = null; });
 const resetButton = document.querySelector("#resetButton");
-if (resetButton) resetButton.addEventListener("click", () => { if (!confirm(language === "id" ? "Hapus semua data aplikasi?" : "Delete all app data?")) return; ["belanja-pintar-items", SAVED_LISTS_KEY, BUDGET_KEY, CURRENCY_KEY, THEME_KEY, THEME_MODE_KEY, LANGUAGE_KEY, NOTIFICATION_KEY, LOW_DATA_KEY].forEach((key) => localStorage.removeItem(key)); location.reload(); });
+if (resetButton) resetButton.addEventListener("click", () => { if (!confirm(language === "id" ? "Hapus semua data aplikasi?" : "Delete all app data?")) return; ["belanja-pintar-items", SAVED_LISTS_KEY, "belanja-pintar-templates", CATEGORY_BUDGET_KEY, REMINDER_KEY, `${REMINDER_KEY}-sent`, BUDGET_KEY, CURRENCY_KEY, THEME_KEY, THEME_MODE_KEY, LANGUAGE_KEY, NOTIFICATION_KEY, LOW_DATA_KEY].forEach((key) => localStorage.removeItem(key)); location.reload(); });
 const backupButton = document.querySelector("#backupButton");
 if (backupButton) backupButton.addEventListener("click", backupData);
 const restoreButton = document.querySelector("#restoreButton");
@@ -121,6 +133,24 @@ if (savedViewInput) savedViewInput.addEventListener("change", () => { savedView 
 
 function loadSavedLists() {
   try { return (JSON.parse(localStorage.getItem(SAVED_LISTS_KEY)) || []).filter((list) => list && typeof list.name === "string" && Array.isArray(list.items)).map((list) => ({ favorite: Boolean(list.favorite), archived: Boolean(list.archived), name: list.name.trim() || "Untitled list", items: list.items.filter((item) => item && typeof item === "object"), budget: Number(list.budget) || 0, savedAt: Number(list.savedAt) || Date.now() })); } catch { return []; }
+}
+
+function renderCategoryBudgets() {
+  const target = document.querySelector("#categoryBudgetInputs");
+  if (!target) return;
+  let values = {};
+  try { values = JSON.parse(localStorage.getItem(CATEGORY_BUDGET_KEY)) || {}; } catch {}
+  const labels = language === "id" ? { food: "Makanan", household: "Rumah", health: "Kesehatan", other: "Lainnya" } : { food: "Food", household: "Household", health: "Health", other: "Other" };
+  target.innerHTML = Object.entries(labels).map(([key, label]) => `<label><span>${label}</span><input type="number" min="0" step="1000" data-category-budget="${key}" value="${Number(values[key]) ? Math.round(Number(values[key]) * CURRENCY_RATES[currency]) : ""}" placeholder="0"></label>`).join("");
+  target.querySelectorAll("[data-category-budget]").forEach((input) => input.addEventListener("change", () => { const next = {}; target.querySelectorAll("[data-category-budget]").forEach((field) => { next[field.dataset.categoryBudget] = Math.max(0, Number(field.value) || 0) / CURRENCY_RATES[currency]; }); localStorage.setItem(CATEGORY_BUDGET_KEY, JSON.stringify(next)); }));
+}
+
+function scheduleReminder() {
+  const value = localStorage.getItem(REMINDER_KEY);
+  if (!value || new Date(value).getTime() > Date.now() || !("Notification" in window) || Notification.permission !== "granted") return;
+  if (localStorage.getItem(`${REMINDER_KEY}-sent`) === value) return;
+  new Notification(language === "id" ? "Pengingat belanja" : "Shopping reminder", { body: language === "id" ? "Waktunya mengecek daftar belanja." : "It is time to check your shopping list." });
+  localStorage.setItem(`${REMINDER_KEY}-sent`, value);
 }
 function formatDate(timestamp) { return new Intl.DateTimeFormat(language === "id" ? "id-ID" : "en-US", { day: "numeric", month: "short", year: "numeric" }).format(timestamp); }
 function renderSavedLists() {
@@ -138,7 +168,7 @@ function renderSavedLists() {
   container.querySelectorAll("[data-load-index]").forEach((link) => link.addEventListener("click", () => { const list = loadSavedLists()[Number(link.dataset.loadIndex)]; if (list) { localStorage.setItem("belanja-pintar-items", JSON.stringify(list.items)); localStorage.setItem(BUDGET_KEY, String(list.budget || 0)); } }));
 }
 
-function formatCurrency(value) { return new Intl.NumberFormat(language === "id" ? "id-ID" : "en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(value); }
+function formatCurrency(value) { return new Intl.NumberFormat(language === "id" ? "id-ID" : "en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(value * CURRENCY_RATES[currency]); }
 
 function renderMonthlyHistory() {
   const target = document.querySelector("#monthlyHistory");
@@ -160,7 +190,7 @@ function renderMonthlyHistory() {
 function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character])); }
 
 function backupData() {
-  const data = { items: JSON.parse(localStorage.getItem("belanja-pintar-items") || "[]"), savedLists: loadSavedLists(), budget: Number(localStorage.getItem(BUDGET_KEY)) || 0, language, theme, currency: localStorage.getItem(CURRENCY_KEY) || "IDR" };
+    const data = { items: JSON.parse(localStorage.getItem("belanja-pintar-items") || "[]"), savedLists: loadSavedLists(), templates: JSON.parse(localStorage.getItem("belanja-pintar-templates") || "[]"), categoryBudgets: JSON.parse(localStorage.getItem(CATEGORY_BUDGET_KEY) || "{}"), reminder: localStorage.getItem(REMINDER_KEY) || "", budget: Number(localStorage.getItem(BUDGET_KEY)) || 0, language, theme, currency: localStorage.getItem(CURRENCY_KEY) || "IDR" };
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
   link.download = "belanja-pintar-backup.json";
@@ -172,10 +202,11 @@ function restoreData(event) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = () => { try { const data = JSON.parse(reader.result); if (!Array.isArray(data.items) || !Array.isArray(data.savedLists)) throw new Error("Invalid backup structure"); localStorage.setItem("belanja-pintar-items", JSON.stringify(data.items)); localStorage.setItem(SAVED_LISTS_KEY, JSON.stringify(data.savedLists)); localStorage.setItem(BUDGET_KEY, String(Number(data.budget) || 0)); if (["id", "en"].includes(data.language)) localStorage.setItem(LANGUAGE_KEY, data.language); if (["light", "dark"].includes(data.theme)) localStorage.setItem(THEME_KEY, data.theme); if (SUPPORTED_CURRENCIES.includes(data.currency)) localStorage.setItem(CURRENCY_KEY, data.currency); location.reload(); } catch { alert(language === "id" ? "File backup tidak valid." : "Invalid backup file."); } };
+  reader.onload = () => { try { const data = JSON.parse(reader.result); if (!Array.isArray(data.items) || !Array.isArray(data.savedLists)) throw new Error("Invalid backup structure"); localStorage.setItem("belanja-pintar-items", JSON.stringify(data.items)); localStorage.setItem(SAVED_LISTS_KEY, JSON.stringify(data.savedLists)); localStorage.setItem("belanja-pintar-templates", JSON.stringify(Array.isArray(data.templates) ? data.templates : [])); localStorage.setItem(CATEGORY_BUDGET_KEY, JSON.stringify(data.categoryBudgets && typeof data.categoryBudgets === "object" ? data.categoryBudgets : {})); if (typeof data.reminder === "string") localStorage.setItem(REMINDER_KEY, data.reminder); localStorage.setItem(BUDGET_KEY, String(Number(data.budget) || 0)); if (["id", "en"].includes(data.language)) localStorage.setItem(LANGUAGE_KEY, data.language); if (["light", "dark"].includes(data.theme)) localStorage.setItem(THEME_KEY, data.theme); if (SUPPORTED_CURRENCIES.includes(data.currency)) localStorage.setItem(CURRENCY_KEY, data.currency); location.reload(); } catch { alert(language === "id" ? "File backup tidak valid." : "Invalid backup file."); } };
   reader.readAsText(file);
 }
 
 applyPagePreferences();
+scheduleReminder();
 document.documentElement.classList.add("app-ready");
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js").catch(() => {});

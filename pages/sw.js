@@ -1,4 +1,4 @@
-const CACHE_NAME = "belanja-pintar-v10";
+const CACHE_NAME = "belanja-pintar-v11";
 const APP_FILES = ["./index.html", "./saved.html", "./analytics.html", "./settings.html", "../css/styles.css", "../js/app.js", "../js/pages.js", "../js/analytics.js", "../assets/manifest.json", "../assets/icon.svg"];
 
 self.addEventListener("install", (event) => {

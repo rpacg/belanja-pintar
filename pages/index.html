@@ -122,6 +122,8 @@
 
       <div class="list-tools" id="savedSection">
         <select class="sort-select" id="quickAddSelect" aria-label="Tambah cepat"><option value="">Tambah cepat</option></select>
+        <select class="sort-select" id="templateSelect" aria-label="Template belanja"><option value="">Template belanja</option></select>
+        <button class="tool-button" id="saveTemplateButton" type="button">Simpan template</button>
         <input class="search-input" id="searchInput" type="search" placeholder="Cari barang..." aria-label="Cari barang">
         <label class="saved-list-field"><span id="savedListLabel">Nama daftar</span><input id="listName" type="text" placeholder="Belanja minggu ini"></label>
         <button class="tool-button" id="saveListButton" type="button">Simpan daftar</button>
@@ -134,6 +136,7 @@
         <button class="tool-button" id="shareButton" type="button">Bagikan</button>
         <button class="tool-button" id="exportButton" type="button">Export</button>
         <button class="tool-button" id="exportCsvButton" type="button">CSV</button>
+        <button class="tool-button" id="exportPdfButton" type="button">PDF</button>
         <select class="sort-select" id="storeFilter" aria-label="Filter toko"><option value="all">Semua toko</option></select>
         <select class="sort-select" id="categoryFilter" aria-label="Filter kategori"><option value="all">Semua kategori</option></select>
       </div>
@@ -147,6 +150,7 @@
           <button class="filter-tab" type="button" data-filter="done"><span id="doneLabel">Selesai</span> <b id="doneCount">0</b></button>
         </div>
         <button class="text-button" id="clearDone" type="button">Hapus yang selesai</button>
+        <button class="text-button" id="undoButton" type="button" hidden>Undo</button>
       </div>
 
       <div class="list-container">

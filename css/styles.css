@@ -102,6 +102,9 @@ button { cursor: pointer; }
 .price-history-row { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .price-history-row span { display: grid; gap: 4px; }
 .price-history-row small { color: var(--muted); font-size: 10px; }
+.price-history-value { min-width: 120px; text-align: right; }
+.price-history-bar { display: block; height: 4px; margin-top: 5px; background: color-mix(in srgb, var(--muted) 18%, transparent); }
+.price-history-bar i { display: block; height: 100%; background: var(--coral); }
 .saved-page-list { display: grid; gap: 10px; }
 .saved-page-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; border: 1px solid var(--line); padding: 20px; background: color-mix(in srgb, var(--surface) 72%, transparent); }
 .saved-page-card h2 { font-family: "DM Sans", sans-serif; font-size: 16px; letter-spacing: 0; }
@@ -116,6 +119,10 @@ button { cursor: pointer; }
 .setting-input input { color: var(--ink); background: transparent; }
 .setting-select { min-width: 155px; border: 1px solid var(--line); padding: 10px 12px; color: var(--ink); background: var(--surface); }
 .danger-button { color: var(--coral); }
+.category-budget-setting { align-items: start; }
+.category-budget-inputs { display: grid; grid-template-columns: repeat(2, minmax(110px, 1fr)); gap: 8px; min-width: 250px; }
+.category-budget-inputs label { display: grid; gap: 4px; color: var(--muted); font-size: 10px; }
+.category-budget-inputs input { width: 100%; border: 1px solid var(--line); padding: 8px; color: var(--ink); background: transparent; }
 .eyebrow { margin: 0 0 13px; color: var(--sage-dark); font-size: 10px; font-weight: 700; letter-spacing: 2.2px; }
 h1, h2, h3, p { margin-top: 0; }
 h1 { margin-bottom: 20px; font-family: "Playfair Display", serif; font-size: clamp(40px, 5.2vw, 70px); font-weight: 700; letter-spacing: -2.5px; line-height: .98; }
@@ -270,4 +277,5 @@ h2 { margin: 0; font-family: "Playfair Display", serif; font-size: 36px; letter-
   .saved-card-actions .tool-button { flex: 1 1 30%; min-width: 0; text-align: center; }
   .setting-input { width: 100%; }
   .setting-select { width: 100%; }
+  .category-budget-inputs { width: 100%; min-width: 0; }
 }

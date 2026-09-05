@@ -4,6 +4,7 @@ const THEME_KEY = "belanja-pintar-theme";
 const CURRENCY_KEY = "belanja-pintar-currency";
 const LOW_DATA_KEY = "belanja-pintar-low-data";
 const SUPPORTED_CURRENCIES = ["IDR", "USD", "SGD"];
+const CURRENCY_RATES = { IDR: 1, USD: 1 / 16000, SGD: 1 / 12500 };
 let language = ["id", "en"].includes(localStorage.getItem(LANGUAGE_KEY)) ? localStorage.getItem(LANGUAGE_KEY) : "id";
 let theme = localStorage.getItem(THEME_KEY) || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 let currency = SUPPORTED_CURRENCIES.includes(localStorage.getItem(CURRENCY_KEY)) ? localStorage.getItem(CURRENCY_KEY) : "IDR";
@@ -13,7 +14,7 @@ const copy = {
 };
 const t = (key) => copy[language][key];
 function readItems() { try { return JSON.parse(localStorage.getItem(ITEMS_KEY)) || []; } catch { return []; } }
-function formatCurrency(value) { return new Intl.NumberFormat(language === "id" ? "id-ID" : "en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(value); }
+function formatCurrency(value) { return new Intl.NumberFormat(language === "id" ? "id-ID" : "en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(value * CURRENCY_RATES[currency]); }
 function discountedPrice(price, discount = 0) { return Number(price || 0) * (1 - Math.min(100, Math.max(0, Number(discount) || 0)) / 100); }
 function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character])); }
 function applyPreferences() {
@@ -38,13 +39,16 @@ function setMenu(open) {
 }
 function renderAnalytics() {
   const items = readItems().filter((item) => item && typeof item === "object");
+  let categoryBudgets = {};
+  try { categoryBudgets = JSON.parse(localStorage.getItem("belanja-pintar-category-budgets")) || {}; } catch {}
   const categoryTotals = {};
   items.forEach((item) => { const category = item.category || "other"; categoryTotals[category] = (categoryTotals[category] || 0) + discountedPrice(item.estimatedPrice, item.discount) * Number(item.quantity || 1); });
   const maxTotal = Math.max(...Object.values(categoryTotals), 0);
   const categoryNames = copy[language].categories || { food: language === "id" ? "Makanan" : "Food", household: language === "id" ? "Rumah" : "Household", health: language === "id" ? "Kesehatan" : "Health", other: language === "id" ? "Lainnya" : "Other" };
-  document.querySelector("#categoryChart").innerHTML = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]).map(([category, total]) => `<div class="category-bar"><div class="category-bar-label"><span>${escapeHtml(categoryNames[category] || category)}</span><strong>${formatCurrency(total)}</strong></div><div class="category-bar-track"><span style="width:${maxTotal ? Math.round(total / maxTotal * 100) : 0}%"></span></div></div>`).join("") || `<p class="summary-detail">${t("empty")}</p>`;
+  document.querySelector("#categoryChart").innerHTML = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]).map(([category, total]) => { const categoryBudget = Number(categoryBudgets[category]) || 0; const percent = categoryBudget ? Math.round(total / categoryBudget * 100) : 0; return `<div class="category-bar"><div class="category-bar-label"><span>${escapeHtml(categoryNames[category] || category)}${categoryBudget ? ` <small>${percent}%</small>` : ""}</span><strong>${formatCurrency(total)}${categoryBudget ? ` / ${formatCurrency(categoryBudget)}` : ""}</strong></div><div class="category-bar-track"><span style="width:${categoryBudget ? Math.min(percent, 100) : (maxTotal ? Math.round(total / maxTotal * 100) : 0)}%;background:${categoryBudget && percent > 100 ? "var(--coral)" : "var(--sage)"}"></span></div></div>`; }).join("") || `<p class="summary-detail">${t("empty")}</p>`;
   const history = items.flatMap((item) => (Array.isArray(item.priceHistory) ? item.priceHistory : []).filter((entry) => entry && Number.isFinite(Number(entry.price))).map((entry) => ({ ...entry, name: typeof item.name === "string" ? item.name : "Item" }))).sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 12);
-  document.querySelector("#priceHistoryList").innerHTML = history.map((entry) => `<div class="price-history-row"><span><strong>${escapeHtml(entry.name)}</strong><small>${new Date(entry.date).toLocaleDateString(language === "id" ? "id-ID" : "en-US")}</small></span><strong>${formatCurrency(entry.price)}</strong></div>`).join("") || `<p class="summary-detail">${t("noPriceHistory")}</p>`;
+  const maxPrice = Math.max(...history.map((entry) => Number(entry.price)), 0);
+  document.querySelector("#priceHistoryList").innerHTML = history.map((entry) => `<div class="price-history-row"><span><strong>${escapeHtml(entry.name)}</strong><small>${new Date(entry.date).toLocaleDateString(language === "id" ? "id-ID" : "en-US")}</small></span><div class="price-history-value"><strong>${formatCurrency(entry.price)}</strong><span class="price-history-bar"><i style="width:${maxPrice ? Math.round(Number(entry.price) / maxPrice * 100) : 0}%"></i></span></div></div>`).join("") || `<p class="summary-detail">${t("noPriceHistory")}</p>`;
   const totals = {};
   items.flatMap((item) => Array.isArray(item.purchaseHistory) ? item.purchaseHistory : []).forEach((entry) => { const date = String(entry.date || ""); if (!/^\d{4}-\d{2}/.test(date)) return; const month = date.slice(0, 7); totals[month] = (totals[month] || 0) + Number(entry.actual ?? entry.estimated ?? 0); });
   const rows = Object.entries(totals).sort((a, b) => b[0].localeCompare(a[0])).map(([month, total]) => `<tr><td>${month}</td><td>${formatCurrency(total)}</td></tr>`).join("");
