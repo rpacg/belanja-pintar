@@ -8,6 +8,8 @@ const THEME_MODE_KEY = "belanja-pintar-theme-mode";
 const LOW_DATA_KEY = "belanja-pintar-low-data";
 const CATEGORY_BUDGET_KEY = "belanja-pintar-category-budgets";
 const REMINDER_KEY = "belanja-pintar-reminder";
+const SUPABASE_URL_KEY = "belanja-pintar-supabase-url";
+const SUPABASE_KEY_KEY = "belanja-pintar-supabase-key";
 const SUPPORTED_CURRENCIES = ["IDR", "USD", "SGD"];
 const CURRENCY_RATES = { IDR: 1, USD: 1 / 16000, SGD: 1 / 12500 };
 let language = ["id", "en"].includes(localStorage.getItem(LANGUAGE_KEY)) ? localStorage.getItem(LANGUAGE_KEY) : "id";
@@ -130,6 +132,84 @@ const savedSearchInput = document.querySelector("#savedSearch");
 if (savedSearchInput) savedSearchInput.addEventListener("input", () => { savedSearch = savedSearchInput.value.trim().toLowerCase(); renderSavedLists(); });
 const savedViewInput = document.querySelector("#savedView");
 if (savedViewInput) savedViewInput.addEventListener("change", () => { savedView = savedViewInput.value; renderSavedLists(); });
+
+const supabaseUrlInput = document.querySelector("#supabaseUrl");
+if (supabaseUrlInput) {
+  supabaseUrlInput.value = localStorage.getItem(SUPABASE_URL_KEY) || "";
+  supabaseUrlInput.addEventListener("change", () => localStorage.setItem(SUPABASE_URL_KEY, supabaseUrlInput.value.trim()));
+}
+const supabaseKeyInput = document.querySelector("#supabaseKey");
+if (supabaseKeyInput) {
+  supabaseKeyInput.value = localStorage.getItem(SUPABASE_KEY_KEY) || "";
+  supabaseKeyInput.addEventListener("change", () => localStorage.setItem(SUPABASE_KEY_KEY, supabaseKeyInput.value.trim()));
+}
+const supabaseEmailInput = document.querySelector("#supabaseEmail");
+if (supabaseEmailInput) supabaseEmailInput.value = window.BelanjaSupabase ? window.BelanjaSupabase.getSavedEmail() : "";
+const supabaseLoginButton = document.querySelector("#supabaseLoginButton");
+if (supabaseLoginButton) supabaseLoginButton.addEventListener("click", async () => {
+  const url = (document.querySelector("#supabaseUrl")?.value || "").trim();
+  const key = (document.querySelector("#supabaseKey")?.value || "").trim();
+  const email = (document.querySelector("#supabaseEmail")?.value || "").trim();
+  const password = (document.querySelector("#supabasePassword")?.value || "").trim();
+  if (!url || !key || !email || !password) {
+    alert(language === "id" ? "Isi URL, key, email, dan password Supabase." : "Fill in Supabase URL, key, email, and password.");
+    return;
+  }
+  localStorage.setItem(SUPABASE_URL_KEY, url);
+  localStorage.setItem(SUPABASE_KEY_KEY, key);
+  const result = await window.BelanjaSupabase.signInWithPassword(email, password);
+  if (result.error) {
+    alert(result.error.message || (language === "id" ? "Login Supabase gagal." : "Supabase login failed."));
+    return;
+  }
+  alert(language === "id" ? "Login berhasil." : "Login successful.");
+  if (window.BelanjaSupabase && typeof window.BelanjaSupabase.loadCloudData === "function") {
+    const cloud = await window.BelanjaSupabase.loadCloudData();
+    if (cloud && cloud.data && Array.isArray(cloud.data.items)) {
+      localStorage.setItem("belanja-pintar-items", JSON.stringify(cloud.data.items));
+      localStorage.setItem(BUDGET_KEY, String(Number(cloud.data.budget) || 0));
+      alert(language === "id" ? "Data cloud berhasil dimuat." : "Cloud data loaded successfully.");
+    }
+  }
+});
+const supabaseSyncButton = document.querySelector("#supabaseSyncButton");
+if (supabaseSyncButton) supabaseSyncButton.addEventListener("click", async () => {
+  if (!window.BelanjaSupabase || !window.BelanjaSupabase.isConfigured()) {
+    alert(language === "id" ? "Supabase belum dikonfigurasi." : "Supabase is not configured yet.");
+    return;
+  }
+  const payload = {
+    items: JSON.parse(localStorage.getItem("belanja-pintar-items") || "[]"),
+    budget: Number(localStorage.getItem(BUDGET_KEY)) || 0,
+    savedLists: JSON.parse(localStorage.getItem(SAVED_LISTS_KEY) || "[]"),
+    templates: JSON.parse(localStorage.getItem("belanja-pintar-templates") || "[]"),
+    updatedAt: Date.now(),
+  };
+  const result = await window.BelanjaSupabase.saveCloudData(payload);
+  if (result.error) {
+    alert(result.error.message || (language === "id" ? "Sinkron gagal." : "Sync failed."));
+    return;
+  }
+  alert(language === "id" ? "Sinkron berhasil." : "Sync successful.");
+});
+const supabaseLogoutButton = document.querySelector("#supabaseLogoutButton");
+if (supabaseLogoutButton) supabaseLogoutButton.addEventListener("click", async () => {
+  if (!window.BelanjaSupabase) return;
+  const result = await window.BelanjaSupabase.signOut();
+  if (result && result.error) {
+    alert(result.error.message || (language === "id" ? "Logout gagal." : "Logout failed."));
+    return;
+  }
+  alert(language === "id" ? "Logout berhasil." : "Logout successful.");
+});
+const supabaseConnectButton = document.querySelector("#supabaseConnectButton");
+if (supabaseConnectButton) supabaseConnectButton.addEventListener("click", () => {
+  if (!window.BelanjaSupabase || !window.BelanjaSupabase.isConfigured()) {
+    alert(language === "id" ? "Konfigurasi Supabase belum lengkap." : "Supabase is not fully configured yet.");
+    return;
+  }
+  alert(language === "id" ? "Supabase siap digunakan." : "Supabase is ready to use.");
+});
 
 function loadSavedLists() {
   try { return (JSON.parse(localStorage.getItem(SAVED_LISTS_KEY)) || []).filter((list) => list && typeof list.name === "string" && Array.isArray(list.items)).map((list) => ({ favorite: Boolean(list.favorite), archived: Boolean(list.archived), name: list.name.trim() || "Untitled list", items: list.items.filter((item) => item && typeof item === "object"), budget: Number(list.budget) || 0, savedAt: Number(list.savedAt) || Date.now() })); } catch { return []; }

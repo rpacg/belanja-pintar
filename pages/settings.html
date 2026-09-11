@@ -22,6 +22,12 @@
     <section class="page-intro"><p class="eyebrow" data-i18n="settingsEyebrow">PREFERENSI</p><h1 data-i18n="settingsTitle">Pengaturan</h1><p class="intro-copy" data-i18n="settingsCopy">Atur tampilan dan batas belanja sesuai kebutuhanmu.</p></section>
     <section class="page-panel settings-panel">
       <label class="setting-row"><span><strong data-i18n="themeSetting">Tema tampilan</strong><small data-i18n="themeSettingCopy">Ikuti sistem atau pilih dark/light dari header.</small></span><select id="themeMode" class="setting-select"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+      <div class="setting-row"><span><strong>Supabase Sync</strong><small>Gunakan URL project dan anon key untuk sinkron data realtime.</small></span><div class="setting-actions"><button class="tool-button" id="supabaseConnectButton" type="button">Connect</button></div></div>
+      <label class="setting-row"><span><strong>Supabase URL</strong><small>Copy dari Project Settings &gt; API.</small></span><input id="supabaseUrl" type="text" placeholder="https://xxxxx.supabase.co" autocomplete="off"></label>
+      <label class="setting-row"><span><strong>Supabase anon key</strong><small>Gunakan anon key project.</small></span><input id="supabaseKey" type="password" placeholder="anon-key" autocomplete="off"></label>
+      <label class="setting-row"><span><strong>Email login</strong><small>Untuk login ke cloud sync.</small></span><input id="supabaseEmail" type="email" placeholder="user@email.com" autocomplete="email"></label>
+      <label class="setting-row"><span><strong>Password</strong><small>Password untuk login Supabase.</small></span><input id="supabasePassword" type="password" placeholder="••••••••" autocomplete="current-password"></label>
+      <div class="setting-row"><span><strong>Cloud status</strong><small>Login dan sinkron data otomatis ke Supabase.</small></span><div class="setting-actions"><button class="tool-button" id="supabaseLoginButton" type="button">Login</button><button class="tool-button" id="supabaseSyncButton" type="button">Sync now</button><button class="tool-button" id="supabaseLogoutButton" type="button">Logout</button></div></div>
       <label class="setting-row"><span><strong data-i18n="currencySetting">Mata uang</strong><small data-i18n="currencySettingCopy">Dipakai untuk semua total dan harga.</small></span><select id="currencySelect" class="setting-select"><option value="IDR">IDR / Rp</option><option value="USD">USD / $</option><option value="SGD">SGD / $</option></select></label>
       <label class="setting-row"><span><strong data-i18n="budgetSetting">Batas budget</strong><small data-i18n="budgetSettingCopy">Batas ini dipakai di halaman Belanja.</small></span><span class="input-prefix setting-input"><b id="settingsCurrency">Rp</b><input id="settingsBudget" type="number" min="0" step="1000" placeholder="0"></span></label>
       <div class="setting-row"><span><strong data-i18n="offlineSetting">Mode offline</strong><small data-i18n="offlineSettingCopy">Data daftar disimpan di browser ini.</small></span><span id="offlineStatus">Aktif</span></div>
@@ -37,6 +43,8 @@
   </main>
   <div class="menu-backdrop" id="menuBackdrop" hidden></div><aside class="side-menu" id="sideMenu" aria-hidden="true"><div class="side-menu-header"><strong>belanja<span>pintar</span></strong><button class="close-menu" id="closeMenu" type="button">×</button></div><nav class="main-nav"><a class="nav-link" href="index.html"><span>◫</span><span data-i18n="shopping">Belanja</span></a><a class="nav-link" href="saved.html"><span>▤</span><span data-i18n="savedLists">Daftar tersimpan</span></a><a class="nav-link" href="analytics.html"><span>▥</span><span data-i18n="analyticsNav">Analitik</span></a><a class="nav-link active" href="settings.html"><span>⚙</span><span data-i18n="settings">Pengaturan</span></a></nav></aside>
   <div class="page-loader" id="pageLoader" aria-live="polite" aria-label="Memuat halaman" hidden><span></span></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
   <script src="../js/pages.js"></script>
 </body>
 </html>
