@@ -90,8 +90,8 @@ button { cursor: pointer; }
 .page-intro { padding: 68px 0 38px; }
 .page-intro h1 { margin-bottom: 18px; }
 .page-panel { min-height: 260px; padding-bottom: 60px; }
-.analytics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-bottom: 14px; }
-.analytics-panel { min-height: 260px; padding: 25px; }
+.analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 18px; margin-bottom: 18px; }
+.analytics-panel { min-height: 280px; padding: 28px; border: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 72%, transparent); box-shadow: var(--shadow); }
 .panel-heading { margin-bottom: 22px; }
 .panel-heading h2 { font-size: 25px; }
 .category-chart, .price-history-list { display: grid; gap: 17px; }
