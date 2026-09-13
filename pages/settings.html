@@ -22,6 +22,18 @@
     <section class="page-intro"><p class="eyebrow" data-i18n="settingsEyebrow">PREFERENSI</p><h1 data-i18n="settingsTitle">Pengaturan</h1><p class="intro-copy" data-i18n="settingsCopy">Atur tampilan dan batas belanja sesuai kebutuhanmu.</p></section>
     <section class="page-panel settings-panel">
       <label class="setting-row"><span><strong data-i18n="themeSetting">Tema tampilan</strong><small data-i18n="themeSettingCopy">Ikuti sistem atau pilih dark/light dari header.</small></span><select id="themeMode" class="setting-select"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+
+      <div class="setting-row"><span><strong>Firebase Cloud Sync</strong><small>Sinkronisasi data otomatis antar perangkat.</small></span><div class="setting-actions"><button class="tool-button" id="firebaseConfigButton" type="button">Set Config</button></div></div>
+      <div hidden id="firebaseConfigFields">
+        <label class="setting-row"><span><strong>API Key</strong></span><input autocomplete="off" id="fbApiKey" placeholder="AIza..." type="text"></label>
+        <label class="setting-row"><span><strong>Auth Domain</strong></span><input autocomplete="off" id="fbAuthDomain" placeholder="project-id.firebaseapp.com" type="text"></label>
+        <label class="setting-row"><span><strong>Project ID</strong></span><input autocomplete="off" id="fbProjectId" placeholder="project-id" type="text"></label>
+        <label class="setting-row"><span><strong>App ID</strong></span><input autocomplete="off" id="fbAppId" placeholder="1:123:web:abc" type="text"></label>
+        <button class="primary-button" id="saveFirebaseConfig" style="margin-top: 10px;" type="button">Simpan Config</button>
+      </div>
+
+      <div class="setting-row"><span><strong>Cloud Account</strong><small id="cloudStatusLabel">Belum login</small></span><div class="setting-actions"><button class="tool-button" id="firebaseLoginButton" type="button">Login with Google</button><button class="tool-button" hidden id="firebaseLogoutButton" type="button">Logout</button></div></div>
+
       <label class="setting-row"><span><strong data-i18n="currencySetting">Mata uang</strong><small data-i18n="currencySettingCopy">Dipakai untuk semua total dan harga.</small></span><select id="currencySelect" class="setting-select"><option value="IDR">IDR / Rp</option><option value="USD">USD / $</option><option value="SGD">SGD / $</option></select></label>
       <label class="setting-row"><span><strong data-i18n="budgetSetting">Batas budget</strong><small data-i18n="budgetSettingCopy">Batas ini dipakai di halaman Belanja.</small></span><span class="input-prefix setting-input"><b id="settingsCurrency">Rp</b><input id="settingsBudget" type="number" min="0" step="1000" placeholder="0"></span></label>
       <div class="setting-row"><span><strong data-i18n="offlineSetting">Mode offline</strong><small data-i18n="offlineSettingCopy">Data daftar disimpan di browser ini.</small></span><span id="offlineStatus">Aktif</span></div>
@@ -37,6 +49,11 @@
   </main>
   <div class="menu-backdrop" id="menuBackdrop" hidden></div><aside class="side-menu" id="sideMenu" aria-hidden="true"><div class="side-menu-header"><strong>belanja<span>pintar</span></strong><button class="close-menu" id="closeMenu" type="button">×</button></div><nav class="main-nav"><a class="nav-link" href="index.html"><span>◫</span><span data-i18n="shopping">Belanja</span></a><a class="nav-link" href="saved.html"><span>▤</span><span data-i18n="savedLists">Daftar tersimpan</span></a><a class="nav-link" href="analytics.html"><span>▥</span><span data-i18n="analyticsNav">Analitik</span></a><a class="nav-link active" href="settings.html"><span>⚙</span><span data-i18n="settings">Pengaturan</span></a></nav></aside>
   <div class="page-loader" id="pageLoader" aria-live="polite" aria-label="Memuat halaman" hidden><span></span></div>
+  <!-- Firebase SDK Compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../js/firebase.js"></script>
   <script src="../js/pages.js"></script>
 </body>
 </html>

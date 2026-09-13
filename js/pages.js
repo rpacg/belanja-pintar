@@ -131,6 +131,72 @@ if (savedSearchInput) savedSearchInput.addEventListener("input", () => { savedSe
 const savedViewInput = document.querySelector("#savedView");
 if (savedViewInput) savedViewInput.addEventListener("change", () => { savedView = savedViewInput.value; renderSavedLists(); });
 
+// Firebase UI Logic
+const fbConfigButton = document.querySelector("#firebaseConfigButton");
+const fbConfigFields = document.querySelector("#firebaseConfigFields");
+if (fbConfigButton) fbConfigButton.addEventListener("click", () => {
+  fbConfigFields.hidden = !fbConfigFields.hidden;
+  if (!fbConfigFields.hidden) {
+    const config = window.BelanjaFirebase.getConfig() || {};
+    document.querySelector("#fbApiKey").value = config.apiKey || "";
+    document.querySelector("#fbAuthDomain").value = config.authDomain || "";
+    document.querySelector("#fbProjectId").value = config.projectId || "";
+    document.querySelector("#fbAppId").value = config.appId || "";
+  }
+});
+
+const saveFBConfigButton = document.querySelector("#saveFirebaseConfig");
+if (saveFBConfigButton) saveFBConfigButton.addEventListener("click", () => {
+  const config = {
+    apiKey: document.querySelector("#fbApiKey").value.trim(),
+    authDomain: document.querySelector("#fbAuthDomain").value.trim(),
+    projectId: document.querySelector("#fbProjectId").value.trim(),
+    appId: document.querySelector("#fbAppId").value.trim(),
+  };
+  if (!config.apiKey || !config.projectId) {
+    alert(language === "id" ? "Minimal isi API Key dan Project ID." : "At least fill in API Key and Project ID.");
+    return;
+  }
+  window.BelanjaFirebase.saveConfig(config);
+  fbConfigFields.hidden = true;
+  alert(language === "id" ? "Konfigurasi disimpan. Halaman akan memuat ulang." : "Configuration saved. Page will reload.");
+  location.reload();
+});
+
+const fbLoginButton = document.querySelector("#firebaseLoginButton");
+const fbLogoutButton = document.querySelector("#firebaseLogoutButton");
+const cloudStatusLabel = document.querySelector("#cloudStatusLabel");
+
+async function updateFBAuthUI() {
+  if (!window.BelanjaFirebase || !window.BelanjaFirebase.isConfigured()) return;
+  const { auth } = await window.BelanjaFirebase.initialize();
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      if (cloudStatusLabel) cloudStatusLabel.textContent = user.email;
+      if (fbLoginButton) fbLoginButton.hidden = true;
+      if (fbLogoutButton) fbLogoutButton.hidden = false;
+    } else {
+      if (cloudStatusLabel) cloudStatusLabel.textContent = language === "id" ? "Belum login" : "Not logged in";
+      if (fbLoginButton) fbLoginButton.hidden = false;
+      if (fbLogoutButton) fbLogoutButton.hidden = true;
+    }
+  });
+}
+
+if (fbLoginButton) fbLoginButton.addEventListener("click", async () => {
+  try {
+    await window.BelanjaFirebase.signInWithGoogle();
+  } catch (err) {
+    alert(err.message);
+  }
+});
+
+if (fbLogoutButton) fbLogoutButton.addEventListener("click", async () => {
+  await window.BelanjaFirebase.signOut();
+});
+
+updateFBAuthUI();
+
 function loadSavedLists() {
   try { return (JSON.parse(localStorage.getItem(SAVED_LISTS_KEY)) || []).filter((list) => list && typeof list.name === "string" && Array.isArray(list.items)).map((list) => ({ favorite: Boolean(list.favorite), archived: Boolean(list.archived), name: list.name.trim() || "Untitled list", items: list.items.filter((item) => item && typeof item === "object"), budget: Number(list.budget) || 0, savedAt: Number(list.savedAt) || Date.now() })); } catch { return []; }
 }

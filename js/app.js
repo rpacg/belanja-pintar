@@ -22,6 +22,52 @@ let selectedCategory = "all";
 let searchQuery = "";
 let savedLists = loadSavedLists();
 let undoSnapshot = null;
+let firebaseSyncUnsubscribe = null;
+
+function syncStateToFirebase() {
+  if (!window.BelanjaFirebase || !window.BelanjaFirebase.isConfigured()) return;
+  const payload = {
+    items,
+    budget,
+    savedLists,
+    templates: loadTemplates(),
+    updatedAt: Date.now(),
+  };
+  window.BelanjaFirebase.saveCloudData(payload).catch(console.error);
+}
+
+function hydrateFromFirebase() {
+  if (!window.BelanjaFirebase || !window.BelanjaFirebase.isConfigured()) return;
+
+  window.BelanjaFirebase.initialize().then(({ auth }) => {
+    auth.onAuthStateChanged((user) => {
+      if (!user) return;
+
+      window.BelanjaFirebase.loadCloudData().then(({ data }) => {
+        if (!data || !Array.isArray(data.items)) return;
+        items = data.items.map(normalizeItem).filter(Boolean);
+        budget = Number(data.budget) || 0;
+        savedLists = Array.isArray(data.savedLists) ? data.savedLists : loadSavedLists();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        localStorage.setItem(BUDGET_KEY, String(budget));
+        localStorage.setItem(SAVED_LISTS_KEY, JSON.stringify(savedLists));
+        render();
+      }).catch(console.error);
+
+      if (firebaseSyncUnsubscribe) firebaseSyncUnsubscribe();
+      firebaseSyncUnsubscribe = window.BelanjaFirebase.subscribeToCloud((payload) => {
+        if (!payload || !Array.isArray(payload.items)) return;
+        items = payload.items.map(normalizeItem).filter(Boolean);
+        budget = Number(payload.budget) || 0;
+        savedLists = Array.isArray(payload.savedLists) ? payload.savedLists : loadSavedLists();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        localStorage.setItem(BUDGET_KEY, String(budget));
+        localStorage.setItem(SAVED_LISTS_KEY, JSON.stringify(savedLists));
+        render();
+      });
+    });
+  });
+}
 
 const elements = {
   form: document.querySelector("#itemForm"),
@@ -374,6 +420,7 @@ function normalizeItem(item) {
 
 function saveAndRender() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  syncStateToFirebase();
   render();
 }
 
@@ -599,6 +646,7 @@ function escapeHtml(value) {
 }
 
 applyPreferences();
+hydrateFromFirebase();
 render();
 document.documentElement.classList.add("app-ready");
 
