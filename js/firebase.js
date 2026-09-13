@@ -11,21 +11,29 @@
 
   function getConfig() {
     try {
-      return JSON.parse(localStorage.getItem(CONFIG_KEY)) || DEFAULT_CONFIG;
-    } catch {
-      return DEFAULT_CONFIG;
-    }
+      const stored = JSON.parse(localStorage.getItem(CONFIG_KEY));
+      if (stored && typeof stored === 'object' && stored.apiKey) {
+        return stored;
+      }
+    } catch (e) {}
+    return DEFAULT_CONFIG;
   }
 
   function isConfigured() {
-    return Boolean(getConfig());
+    const config = getConfig();
+    return Boolean(config && config.apiKey);
   }
 
   async function initialize() {
     const config = getConfig();
-    if (!config) return null;
+    if (!config || !config.apiKey) {
+      throw new Error("Konfigurasi Firebase tidak ditemukan atau tidak valid.");
+    }
 
     if (!app) {
+      if (typeof firebase === 'undefined') {
+        throw new Error("Library Firebase belum termuat. Periksa koneksi internet Anda.");
+      }
       app = firebase.initializeApp(config);
       auth = firebase.auth(app);
       db = firebase.firestore(app);
