@@ -2,11 +2,18 @@
   const CONFIG_KEY = "belanja-pintar-firebase-config";
   let app, auth, db;
 
+  const DEFAULT_CONFIG = {
+    apiKey: "AIzaSyAKIB1G3SiN9CJxaijQMUUmuZRnZLjr6Fo",
+    authDomain: "belanja-pintar.firebaseapp.com",
+    projectId: "belanja-pintar",
+    appId: "1:893555930148:web:819fc198f4f90a229a14b1"
+  };
+
   function getConfig() {
     try {
-      return JSON.parse(localStorage.getItem(CONFIG_KEY)) || null;
+      return JSON.parse(localStorage.getItem(CONFIG_KEY)) || DEFAULT_CONFIG;
     } catch {
-      return null;
+      return DEFAULT_CONFIG;
     }
   }
 
