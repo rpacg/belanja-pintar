@@ -83,4 +83,6 @@ document.querySelector("#themeToggle").addEventListener("change", (event) => { t
 document.querySelector("#languageToggle").addEventListener("click", () => { language = language === "id" ? "en" : "id"; localStorage.setItem(LANGUAGE_KEY, language); applyPreferences(); });
 applyPreferences();
 document.documentElement.classList.add("app-ready");
-if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js").catch(() => {});
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  navigator.serviceWorker.register("../sw.js").catch(() => {});
+}

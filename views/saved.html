@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+  <meta content="yes" name="apple-mobile-web-app-capable">
+  <meta content="default" name="apple-mobile-web-app-status-bar-style">
+  <meta content="Belanja Pintar" name="apple-mobile-web-app-title">
+  <script>const initialThemeMode = localStorage.getItem("belanja-pintar-theme-mode") || localStorage.getItem("belanja-pintar-theme") || "system"; document.documentElement.dataset.theme = initialThemeMode === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : initialThemeMode; document.documentElement.lang = localStorage.getItem("belanja-pintar-language") || "id"; document.documentElement.dataset.lowData = localStorage.getItem("belanja-pintar-low-data") === "true" ? "true" : "false";</script>
+  <link href="../assets/icon.svg" rel="icon" type="image/svg+xml">
+  <meta content="#f5f1e8" name="theme-color">
+  <title>Daftar Tersimpan</title>
+  <link href="../manifest.json" rel="manifest">
+  <link href="../css/styles.css" rel="stylesheet">
+</head>
+<body data-page="saved">
+  <main class="page-shell">
+    <header class="topbar">
+      <div class="brand-group"><button aria-expanded="false" aria-label="Buka menu" class="menu-button" id="menuButton" type="button"><span></span><span></span><span></span></button><a class="brand" href="../index.html">belanja<span>pintar</span></a></div>
+      <div class="header-controls"><label class="theme-control" title="Ganti tema"><span id="themeIcon">☼</span><input id="themeToggle" role="switch" type="checkbox"><span class="toggle-track"><span class="toggle-thumb"></span></span></label><button class="language-toggle" id="languageToggle" type="button">EN</button></div>
+    </header>
+    <section class="page-intro"><p class="eyebrow" data-i18n="savedEyebrow">ARSIP BELANJA</p><h1 data-i18n="savedTitle">Daftar tersimpan</h1><p class="intro-copy" data-i18n="savedCopy">Buka kembali daftar belanja yang pernah kamu simpan.</p></section>
+    <section class="page-panel"><div class="saved-list-tools"><input aria-label="Cari daftar" class="search-input" id="savedSearch" placeholder="Cari daftar..." type="search"><select aria-label="Tampilan daftar" class="sort-select" id="savedView"><option value="active">Aktif</option><option value="favorite">Favorit</option><option value="archived">Arsip</option></select></div><div class="saved-page-list" id="savedPageList"></div><div class="empty-state" id="savedPageEmpty"><div class="empty-mark">+</div><h3 data-i18n="savedEmptyTitle">Belum ada daftar tersimpan</h3><p data-i18n="savedEmptyCopy">Simpan daftar dari halaman Belanja untuk melihatnya di sini.</p><a class="primary-button page-button" data-i18n="goShopping" href="../index.html">Ke halaman belanja</a></div></section>
+    <section class="page-panel history-panel"><p class="eyebrow" data-i18n="historyEyebrow">RIWAYAT</p><h2 data-i18n="historyTitle">Riwayat belanja bulanan</h2><div id="monthlyHistory"></div></section>
+    <footer class="footer"><span>Belanja Pintar</span><span data-i18n="storage">Data tersimpan di browser ini</span></footer>
+  </main>
+  <div class="menu-backdrop" hidden id="menuBackdrop"></div><aside aria-hidden="true" class="side-menu" id="sideMenu"><div class="side-menu-header"><strong>belanja<span>pintar</span></strong><button class="close-menu" id="closeMenu" type="button">×</button></div><nav class="main-nav"><a class="nav-link" href="../index.html"><span>◫</span><span data-i18n="shopping">Belanja</span></a><a class="nav-link active" href="saved.html"><span>▤</span><span data-i18n="savedLists">Daftar tersimpan</span></a><a class="nav-link" href="analytics.html"><span>▥</span><span data-i18n="analyticsNav">Analitik</span></a><a class="nav-link" href="settings.html"><span>⚙</span><span data-i18n="settings">Pengaturan</span></a></nav></aside>
+  <div aria-label="Memuat halaman" aria-live="polite" class="page-loader" hidden id="pageLoader"><span></span></div>
+  <!-- Firebase SDK Compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../js/core/firebase.js"></script>
+  <script src="../js/ui/shared.js"></script>
+</body>
+</html>

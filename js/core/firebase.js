@@ -33,7 +33,6 @@
 
     const config = getConfig();
     if (!app) {
-      // Cek apakah sudah ada app yang jalan (biar tidak error 'already exists')
       if (firebase.apps.length > 0) {
         app = firebase.app();
       } else {
@@ -42,13 +41,11 @@
       auth = firebase.auth(app);
       db = firebase.firestore(app);
 
-      // Enable offline persistence (opsional, jangan blokir login jika gagal)
       db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
         console.warn("Persistence failed:", err.code);
       });
     }
 
-    // Pastikan auth selalu ada
     if (!auth) auth = firebase.auth(app);
     return { app, auth, db };
   }

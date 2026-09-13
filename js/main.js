@@ -399,7 +399,7 @@ function loadItems() {
 }
 
 function loadSavedLists() {
-  try { return (JSON.parse(localStorage.getItem(SAVED_LISTS_KEY)) || []).map((list) => ({ name: typeof list?.name === "string" && list.name.trim() ? list.name.trim() : "Untitled list", items: Array.isArray(list?.items) ? list.items.map(normalizeItem).filter(Boolean) : [], budget: Number.isFinite(Number(list?.budget)) ? Math.max(0, Number(list.budget)) : 0, favorite: Boolean(list?.favorite), archived: Boolean(list?.archived), savedAt: Number(list?.savedAt) || Date.now() })); }
+  try { return (JSON.parse(localStorage.getItem(SAVED_LISTS_KEY)) || []).map((list) => ({ name: typeof list?.name === "string" && list.name.trim() ? list.name.trim() : "Untitled list", items: Array.isArray(list?.items) ? list.items.map(normalizeItem).filter(Boolean) : [], budget: Number(isFinite(Number(list?.budget))) ? Math.max(0, Number(list.budget)) : 0, favorite: Boolean(list?.favorite), archived: Boolean(list?.archived), savedAt: Number(list?.savedAt) || Date.now() })); }
   catch { return []; }
 }
 
@@ -651,5 +651,5 @@ render();
 document.documentElement.classList.add("app-ready");
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-  navigator.serviceWorker.register("../pages/sw.js").catch(() => {});
+  navigator.serviceWorker.register("sw.js").catch(() => {});
 }
