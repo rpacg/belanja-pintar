@@ -6,6 +6,8 @@
     apiKey: "AIzaSyAKIB1G3SiN9CJxaijQMUUmuZRnZLjr6Fo",
     authDomain: "belanja-pintar.firebaseapp.com",
     projectId: "belanja-pintar",
+    storageBucket: "belanja-pintar.firebasestorage.app",
+    messagingSenderId: "893555930148",
     appId: "1:893555930148:web:819fc198f4f90a229a14b1"
   };
 
@@ -25,37 +27,35 @@
   }
 
   async function initialize() {
-    const config = getConfig();
-    if (!config || !config.apiKey) {
-      throw new Error("Konfigurasi Firebase tidak ditemukan atau tidak valid.");
+    if (typeof firebase === 'undefined') {
+      throw new Error("Library Firebase belum termuat. Periksa koneksi internet Anda.");
     }
 
+    const config = getConfig();
     if (!app) {
-      if (typeof firebase === 'undefined') {
-        throw new Error("Library Firebase belum termuat. Periksa koneksi internet Anda.");
+      // Cek apakah sudah ada app yang jalan (biar tidak error 'already exists')
+      if (firebase.apps.length > 0) {
+        app = firebase.app();
+      } else {
+        app = firebase.initializeApp(config);
       }
-      app = firebase.initializeApp(config);
       auth = firebase.auth(app);
       db = firebase.firestore(app);
 
-      // Enable offline persistence
-      try {
-        await db.enablePersistence({ synchronizeTabs: true });
-        console.log("Firebase persistence enabled.");
-      } catch (err) {
-        if (err.code === 'failed-precondition') {
-          console.warn("Persistence failed: multiple tabs open.");
-        } else if (err.code === 'unimplemented') {
-          console.warn("Persistence not supported by browser.");
-        }
-      }
+      // Enable offline persistence (opsional, jangan blokir login jika gagal)
+      db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+        console.warn("Persistence failed:", err.code);
+      });
     }
+
+    // Pastikan auth selalu ada
+    if (!auth) auth = firebase.auth(app);
     return { app, auth, db };
   }
 
   async function signInWithGoogle() {
-    await initialize();
-    if (!auth) throw new Error("Firebase not initialized");
+    const { auth } = await initialize();
+    if (!auth) throw new Error("Firebase Auth tidak dapat dijalankan.");
     const provider = new firebase.auth.GoogleAuthProvider();
     return auth.signInWithPopup(provider);
   }
