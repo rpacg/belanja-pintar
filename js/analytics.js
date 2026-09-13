@@ -8,6 +8,8 @@ const CURRENCY_RATES = { IDR: 1, USD: 1 / 16000, SGD: 1 / 12500 };
 let language = ["id", "en"].includes(localStorage.getItem(LANGUAGE_KEY)) ? localStorage.getItem(LANGUAGE_KEY) : "id";
 let theme = localStorage.getItem(THEME_KEY) || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 let currency = SUPPORTED_CURRENCIES.includes(localStorage.getItem(CURRENCY_KEY)) ? localStorage.getItem(CURRENCY_KEY) : "IDR";
+let firebaseSyncUnsubscribe = null;
+
 const copy = {
   id: { shopping: "Belanja", savedLists: "Daftar tersimpan", analyticsNav: "Analitik", settings: "Pengaturan", analyticsEyebrow: "RINGKASAN BELANJA", analyticsTitle: "Analitik", analyticsCopy: "Lihat pola pengeluaran, kategori terbesar, dan perubahan harga.", categoryBudget: "BUDGET PER KATEGORI", categoryTitle: "Kategori", priceHistoryTitle: "RIWAYAT HARGA", priceHistoryHeading: "Perubahan harga", monthlyHistoryEyebrow: "RIWAYAT BULANAN", monthlyHistoryTitle: "Belanja per bulan", storage: "Data tersimpan di browser ini", theme: "Mode gelap", empty: "Belum ada data analitik.", noPriceHistory: "Belum ada perubahan harga." },
   en: { shopping: "Shopping", savedLists: "Saved lists", analyticsNav: "Analytics", settings: "Settings", analyticsEyebrow: "SHOPPING SUMMARY", analyticsTitle: "Analytics", analyticsCopy: "See spending patterns, top categories, and price changes.", categoryBudget: "BUDGET BY CATEGORY", categoryTitle: "Categories", priceHistoryTitle: "PRICE HISTORY", priceHistoryHeading: "Price changes", monthlyHistoryEyebrow: "MONTHLY HISTORY", monthlyHistoryTitle: "Shopping by month", storage: "Data saved in this browser", theme: "Dark mode", empty: "No analytics data yet.", noPriceHistory: "No price changes yet." }
@@ -28,7 +30,24 @@ function applyPreferences() {
   document.querySelector(".theme-control").title = t("theme");
   document.querySelector("#languageToggle").textContent = language === "id" ? "EN" : "ID";
   document.querySelectorAll("[data-i18n]").forEach((element) => { element.textContent = t(element.dataset.i18n); });
+  hydrateFromFirebase();
   renderAnalytics();
+}
+
+function hydrateFromFirebase() {
+  if (!window.BelanjaFirebase || !window.BelanjaFirebase.isConfigured()) return;
+  window.BelanjaFirebase.initialize().then(({ auth }) => {
+    auth.onAuthStateChanged((user) => {
+      if (!user) return;
+      if (firebaseSyncUnsubscribe) firebaseSyncUnsubscribe();
+      firebaseSyncUnsubscribe = window.BelanjaFirebase.subscribeToCloud((payload) => {
+        if (!payload || !Array.isArray(payload.items)) return;
+        localStorage.setItem(ITEMS_KEY, JSON.stringify(payload.items));
+        localStorage.setItem("belanja-pintar-budget", String(payload.budget || 0));
+        renderAnalytics();
+      });
+    });
+  });
 }
 function setMenu(open) {
   const menu = document.querySelector("#sideMenu");

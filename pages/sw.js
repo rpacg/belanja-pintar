@@ -1,5 +1,5 @@
 const CACHE_NAME = "belanja-pintar-v11";
-const APP_FILES = ["./index.html", "./saved.html", "./analytics.html", "./settings.html", "../css/styles.css", "../js/app.js", "../js/pages.js", "../js/analytics.js", "../assets/manifest.json", "../assets/icon.svg"];
+const APP_FILES = ["./index.html", "./saved.html", "./analytics.html", "./settings.html", "../css/styles.css", "../js/app.js", "../js/pages.js", "../js/analytics.js", "../js/firebase.js", "../assets/manifest.json", "../assets/icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_FILES)).then(() => self.skipWaiting()));
