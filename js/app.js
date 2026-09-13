@@ -22,51 +22,6 @@ let selectedCategory = "all";
 let searchQuery = "";
 let savedLists = loadSavedLists();
 let undoSnapshot = null;
-let supabaseSyncUnsubscribe = null;
-
-function syncStateToSupabase() {
-  if (!window.BelanjaSupabase || !window.BelanjaSupabase.isConfigured()) return;
-  const payload = {
-    items,
-    budget,
-    savedLists,
-    templates: loadTemplates(),
-    updatedAt: Date.now(),
-  };
-  window.BelanjaSupabase.getSession().then((session) => {
-    if (!session?.user?.id) return;
-    window.BelanjaSupabase.saveCloudData(payload).catch(() => {});
-  }).catch(() => {});
-}
-
-function hydrateFromSupabase() {
-  if (!window.BelanjaSupabase || !window.BelanjaSupabase.isConfigured()) return;
-  window.BelanjaSupabase.getSession().then((session) => {
-    if (!session?.user?.id) return;
-    window.BelanjaSupabase.loadCloudData().then(({ data }) => {
-      if (!data || !Array.isArray(data.items)) return;
-      items = data.items.map(normalizeItem).filter(Boolean);
-      budget = Number(data.budget) || 0;
-      savedLists = Array.isArray(data.savedLists) ? data.savedLists : loadSavedLists();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-      localStorage.setItem(BUDGET_KEY, String(budget));
-      localStorage.setItem(SAVED_LISTS_KEY, JSON.stringify(savedLists));
-      render();
-    }).catch(() => {});
-  }).catch(() => {});
-
-  supabaseSyncUnsubscribe = window.BelanjaSupabase.subscribeToCloud((payload) => {
-    if (!payload || !Array.isArray(payload.items)) return;
-    const nextItems = payload.items.map(normalizeItem).filter(Boolean);
-    items = nextItems;
-    budget = Number(payload.budget) || 0;
-    savedLists = Array.isArray(payload.savedLists) ? payload.savedLists : loadSavedLists();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    localStorage.setItem(BUDGET_KEY, String(budget));
-    localStorage.setItem(SAVED_LISTS_KEY, JSON.stringify(savedLists));
-    render();
-  });
-}
 
 const elements = {
   form: document.querySelector("#itemForm"),
@@ -419,7 +374,6 @@ function normalizeItem(item) {
 
 function saveAndRender() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  syncStateToSupabase();
   render();
 }
 
@@ -645,7 +599,6 @@ function escapeHtml(value) {
 }
 
 applyPreferences();
-hydrateFromSupabase();
 render();
 document.documentElement.classList.add("app-ready");
 
